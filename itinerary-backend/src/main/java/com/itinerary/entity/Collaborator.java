@@ -1,4 +1,4 @@
-package main.java.com.itinerary.entity;
+package com.itinerary.entity;
 
 import com.itinerary.entity.enums.CollaboratorRole;
 import jakarta.persistence.*;

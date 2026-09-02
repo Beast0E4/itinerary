@@ -1,4 +1,4 @@
-package main.java.com.itinerary.entity;
+package com.itinerary.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
