@@ -1,0 +1,10 @@
+${AnsiColor.BRIGHT_CYAN}
+    ___  __  _                                    
+   /  _// /_(_)___   ___   _____ ____ _ _____ __  __
+   / / / __/ / __ \ / _ \ / ___// __ `// ___// / / /
+ _/ / / /_/ / / / //  __// /   / /_/ // /   / /_/ / 
+/___/ \__/_/_/ /_/ \___//_/    \__,_//_/    \__, /  
+                                           /____/   
+${AnsiColor.BRIGHT_YELLOW}:: Itinerary API ::
+${AnsiColor.BRIGHT_BLACK}Powered by Spring Boot ${spring-boot.version}
+${AnsiColor.DEFAULT}
