@@ -1,0 +1,10 @@
+CREATE INDEX idx_trips_owner ON trips(owner_id);
+CREATE INDEX idx_trips_dates ON trips(start_date, end_date);
+CREATE INDEX idx_days_trip ON itinerary_days(trip_id);
+CREATE INDEX idx_items_day ON itinerary_items(itinerary_day_id);
+CREATE INDEX idx_items_order ON itinerary_items(itinerary_day_id, display_order);
+CREATE INDEX idx_expenses_trip ON expenses(trip_id);
+CREATE INDEX idx_expenses_category ON expenses(trip_id, category);
+CREATE INDEX idx_packing_trip ON packing_list_items(trip_id);
+CREATE INDEX idx_collab_user ON collaborators(user_id);
+CREATE INDEX idx_activities_trip ON activities(trip_id);
