@@ -5,7 +5,9 @@ import {
   updateItemRequest,
   deleteItemRequest,
   reorderItemsRequest,
+  generateDaysRequest
 } from './itineraryApi';
+
 
 const initialState = {
   days: [],
@@ -70,6 +72,17 @@ export const reorderItineraryItems = createAsyncThunk(
   }
 );
 
+export const generateDays = createAsyncThunk(
+  'itinerary/generateDays',
+  async (tripId, { rejectWithValue }) => {
+    try {
+      return await generateDaysRequest(tripId);
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || 'Could not generate itinerary days');
+    }
+  }
+);
+
 const itinerarySlice = createSlice({
   name: 'itinerary',
   initialState,
@@ -95,6 +108,9 @@ const itinerarySlice = createSlice({
       .addCase(fetchItinerary.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
+      })
+      .addCase(generateDays.fulfilled, (state, action) => {
+        state.days = action.payload;
       })
       .addCase(addItineraryItem.fulfilled, (state, action) => {
         const day = state.days.find((d) => d.id === action.payload.itineraryDayId);

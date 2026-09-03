@@ -16,3 +16,6 @@ export const reorderItemsRequest = (tripId, dayId, orderedItemIds) =>
   axiosClient
     .patch(`/trips/${tripId}/itinerary/days/${dayId}/reorder`, { orderedItemIds })
     .then((res) => res.data);
+
+export const generateDaysRequest = (tripId) =>
+  axiosClient.post(`/trips/${tripId}/itinerary/days/generate`).then((res) => res.data);

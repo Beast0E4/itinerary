@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { useTripId } from '../hooks/useTripId';
+import Button from '../components/common/Button';
 import {
   fetchItinerary,
   addItineraryItem,
@@ -11,6 +12,7 @@ import {
   reorderLocally,
   selectItineraryDays,
   selectItineraryStatus,
+  generateDays
 } from '../features/itinerary/itinerarySlice';
 import DayTimeline from '../components/itinerary/DayTimeline';
 import ItemFormModal from '../components/itinerary/ItemFormModal';
@@ -27,10 +29,20 @@ export default function ItineraryBuilderPage() {
   const [activeDay, setActiveDay] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (tripId) dispatch(fetchItinerary(tripId));
   }, [tripId, dispatch]);
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    const result = await dispatch(generateDays(tripId));
+    setGenerating(false);
+    if (result.meta.requestStatus !== 'fulfilled') {
+      toast.error(result.payload || 'Could not set up the itinerary');
+    }
+  };
 
   const openAddModal = (day) => {
     setActiveDay(day);
@@ -88,7 +100,8 @@ export default function ItineraryBuilderPage() {
     return (
       <EmptyState
         title="No days on the map yet"
-        description="Days are created from your trip's date range. If you're not seeing any, double check the trip's start and end dates."
+        description="Generate a day for each date of your trip, then start adding stops to the route."
+        action={<Button loading={generating} onClick={handleGenerate}>Generate itinerary days</Button>}
       />
     );
   }
