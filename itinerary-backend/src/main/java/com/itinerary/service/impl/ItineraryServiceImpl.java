@@ -1,10 +1,12 @@
 package com.itinerary.service.impl;
 
+import java.time.LocalDate;
 import com.itinerary.dto.request.ItineraryItemRequest;
 import com.itinerary.dto.response.ItineraryDayResponse;
 import com.itinerary.dto.response.ItineraryItemResponse;
 import com.itinerary.entity.ItineraryDay;
 import com.itinerary.entity.ItineraryItem;
+import com.itinerary.entity.Trip;
 import com.itinerary.exception.ResourceNotFoundException;
 import com.itinerary.mapper.ItineraryMapper;
 import com.itinerary.repository.ItineraryDayRepository;
@@ -145,5 +147,39 @@ public class ItineraryServiceImpl implements ItineraryService {
         if (!tripRepository.isEditableByUser(tripId, userId)) {
             throw new AccessDeniedException("You do not have edit permission for this trip");
         }
+    }
+
+    @Override
+    @Transactional
+    public List<ItineraryDayResponse> generateDaysForTrip(Long userId, Long tripId) {
+        assertEditable(tripId, userId);
+
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
+
+        long existing = dayRepository.countByTripId(tripId);
+        if (existing > 0) {
+            // Already generated — return what's there rather than duplicating.
+            return dayRepository.findByTripIdOrderByDayNumberAsc(tripId).stream()
+                    .map(itineraryMapper::toDayResponse)
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        List<ItineraryDay> days = new java.util.ArrayList<>();
+        LocalDate cursor = trip.getStartDate();
+        int dayNumber = 1;
+
+        while (!cursor.isAfter(trip.getEndDate())) {
+            days.add(ItineraryDay.builder()
+                    .trip(trip)
+                    .dayNumber(dayNumber)
+                    .date(cursor)
+                    .build());
+            cursor = cursor.plusDays(1);
+            dayNumber++;
+        }
+
+        List<ItineraryDay> saved = dayRepository.saveAll(days);
+        return saved.stream().map(itineraryMapper::toDayResponse).collect(java.util.stream.Collectors.toList());
     }
 }

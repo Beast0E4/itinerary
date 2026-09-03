@@ -54,4 +54,10 @@ public class ItineraryController {
         itineraryService.reorderItems(authenticatedUser.getId(), tripId, dayId, body.get("orderedItemIds"));
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/days/generate")
+    public ResponseEntity<List<ItineraryDayResponse>> generateDays(@PathVariable Long tripId) {
+        List<ItineraryDayResponse> days = itineraryService.generateDaysForTrip(authenticatedUser.getId(), tripId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(days);
+    }
 }

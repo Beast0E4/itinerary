@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface ItineraryService {
     List<ItineraryDayResponse> getItineraryForTrip(Long userId, Long tripId);
+    List<ItineraryDayResponse> generateDaysForTrip(Long userId, Long tripId);
     ItineraryItemResponse addItem(Long userId, Long tripId, ItineraryItemRequest request);
     ItineraryItemResponse updateItem(Long userId, Long tripId, Long itemId, ItineraryItemRequest request);
     void deleteItem(Long userId, Long tripId, Long itemId);
