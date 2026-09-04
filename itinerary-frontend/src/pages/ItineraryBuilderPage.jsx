@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { useTripId } from '../hooks/useTripId';
-import Button from '../components/common/Button';
 import {
   fetchItinerary,
   addItineraryItem,
@@ -10,14 +9,15 @@ import {
   deleteItineraryItem,
   reorderItineraryItems,
   reorderLocally,
+  generateDays,
   selectItineraryDays,
   selectItineraryStatus,
-  generateDays
 } from '../features/itinerary/itinerarySlice';
-import DayTimeline from '../components/itinerary/DayTimeline';
+import DragDropItineraryBoard from '../components/itinerary/DragDropItineraryBoard';
 import ItemFormModal from '../components/itinerary/ItemFormModal';
 import Spinner from '../components/common/Spinner';
 import EmptyState from '../components/common/EmptyState';
+import Button from '../components/common/Button';
 
 export default function ItineraryBuilderPage() {
   const dispatch = useAppDispatch();
@@ -34,15 +34,6 @@ export default function ItineraryBuilderPage() {
   useEffect(() => {
     if (tripId) dispatch(fetchItinerary(tripId));
   }, [tripId, dispatch]);
-
-  const handleGenerate = async () => {
-    setGenerating(true);
-    const result = await dispatch(generateDays(tripId));
-    setGenerating(false);
-    if (result.meta.requestStatus !== 'fulfilled') {
-      toast.error(result.payload || 'Could not set up the itinerary');
-    }
-  };
 
   const openAddModal = (day) => {
     setActiveDay(day);
@@ -88,6 +79,15 @@ export default function ItineraryBuilderPage() {
     dispatch(reorderItineraryItems({ tripId, dayId, orderedItemIds }));
   };
 
+  const handleGenerate = async () => {
+    setGenerating(true);
+    const result = await dispatch(generateDays(tripId));
+    setGenerating(false);
+    if (result.meta.requestStatus !== 'fulfilled') {
+      toast.error(result.payload || 'Could not set up the itinerary');
+    }
+  };
+
   if (status === 'loading' && days.length === 0) {
     return (
       <div className="flex justify-center py-24">
@@ -101,23 +101,24 @@ export default function ItineraryBuilderPage() {
       <EmptyState
         title="No days on the map yet"
         description="Generate a day for each date of your trip, then start adding stops to the route."
-        action={<Button loading={generating} onClick={handleGenerate}>Generate itinerary days</Button>}
+        action={
+          <Button loading={generating} onClick={handleGenerate}>
+            Generate itinerary days
+          </Button>
+        }
       />
     );
   }
 
   return (
     <div>
-      {days.map((day) => (
-        <DayTimeline
-          key={day.id}
-          day={day}
-          onAddItem={openAddModal}
-          onEditItem={openEditModal}
-          onDeleteItem={handleDelete}
-          onReorder={handleReorder}
-        />
-      ))}
+      <DragDropItineraryBoard
+        days={days}
+        onAddItem={openAddModal}
+        onEditItem={openEditModal}
+        onDeleteItem={handleDelete}
+        onReorder={handleReorder}
+      />
 
       <ItemFormModal
         open={modalOpen}

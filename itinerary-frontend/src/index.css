@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-surface-hair;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-ink text-parchment font-sans antialiased;
+  }
+
+  h1, h2, h3 {
+    @apply font-display text-parchment;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme('colors.route.bright');
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .ticket {
+    @apply bg-parchment text-parchment-text rounded-ticket;
+  }
+
+  .ticket-perf {
+    position: relative;
+  }
+
+  .ticket-perf::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--perf-left, 62%);
+    width: 0;
+    border-left: 2px dashed rgba(28, 38, 34, 0.18);
+  }
+
+  .route-line {
+    stroke: theme('colors.route.DEFAULT');
+    stroke-width: 2;
+    fill: none;
+    stroke-dasharray: 1000;
+  }
+
+  .waypoint-dot {
+    @apply bg-route border-2 border-ink rounded-full;
+  }
+
+  .stub-edge {
+    background-image: radial-gradient(circle at 0 50%, transparent 6px, theme('colors.surface.DEFAULT') 6.5px);
+    background-size: 16px 16px;
+    background-repeat: repeat-y;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-route text-ink font-sans font-semibold
+           px-5 py-2.5 rounded-stub transition-colors hover:bg-route-bright
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-parchment font-sans font-medium
+           px-5 py-2.5 rounded-stub border border-surface-hair transition-colors
+           hover:border-route hover:text-route-bright
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .input-field {
+    @apply w-full bg-surface border border-surface-hair rounded-stub px-4 py-2.5
+           text-parchment placeholder:text-muted font-sans
+           focus:border-route focus:outline-none transition-colors;
+  }
+
+  .data-mono {
+    @apply font-mono text-sm tracking-tight;
+  }
+
+  .badge-stamp {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-medium
+           border border-current;
+  }
+}
