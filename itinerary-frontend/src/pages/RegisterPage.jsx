@@ -34,7 +34,7 @@ export default function RegisterPage() {
   return (
     <div>
       <h1 className="font-display text-display-md mb-2">Start your journal</h1>
-      <p className="text-sm text-muted mb-8">A place for every trip you're planning next.</p>
+      <p className="text-sm text-text-muted mb-8">A place for every trip you're planning next.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -73,9 +73,9 @@ export default function RegisterPage() {
         </Button>
       </form>
 
-      <p className="text-sm text-muted mt-6">
-        Already planning with Atlas?{' '}
-        <Link to="/login" className="text-route-bright hover:underline">
+      <p className="text-sm text-text-muted mt-6">
+        Already planning with Compass?{' '}
+        <Link to="/login" className="text-accent hover:text-accent-hover hover:underline">
           Sign in
         </Link>
       </p>

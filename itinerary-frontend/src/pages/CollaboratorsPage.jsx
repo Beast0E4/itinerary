@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { UserPlus } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { useTripId } from '../hooks/useTripId';
 import { useAuth } from '../hooks/useAuth';
@@ -59,16 +60,17 @@ export default function CollaboratorsPage() {
 
   return (
     <div className="max-w-lg">
-      <div className="ticket p-6">
+      <div className="card p-6">
         <div className="flex items-center justify-between mb-2">
           <h2 className="font-display text-lg">Who's planning this trip</h2>
           {isOwner && (
-            <button onClick={() => setModalOpen(true)} className="text-sm text-route-bright hover:underline">
-              + Invite
+            <button onClick={() => setModalOpen(true)} className="btn-ghost text-sm">
+              <UserPlus className="w-3.5 h-3.5" strokeWidth={1.75} />
+              Invite
             </button>
           )}
         </div>
-        <p className="text-sm text-parchment-text/50 mb-3">
+        <p className="text-sm text-text-muted mb-3">
           {isOwner ? 'You own this trip.' : 'You have collaborator access to this trip.'}
         </p>
         <CollaboratorList

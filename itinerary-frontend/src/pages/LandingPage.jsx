@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Compass } from 'lucide-react';
 import Footer from '../components/layout/Footer';
 import { useAuth } from '../hooks/useAuth';
 
@@ -7,9 +8,12 @@ export default function LandingPage() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-screen flex flex-col bg-ink">
+    <div className="min-h-screen flex flex-col bg-bg">
       <header className="flex items-center justify-between px-6 sm:px-10 py-6">
-        <span className="font-display text-2xl text-parchment">Atlas</span>
+        <div className="flex items-center gap-2">
+          <Compass className="w-5 h-5 text-accent" strokeWidth={2} />
+          <span className="font-display text-2xl text-text">Compass</span>
+        </div>
         <nav className="flex items-center gap-3">
           {isAuthenticated ? (
             <Link to="/dashboard" className="btn-primary !py-2">
@@ -36,8 +40,8 @@ export default function LandingPage() {
               <br />
               has a route.
             </h1>
-            <p className="text-lg text-parchment/75 max-w-md mb-8 leading-relaxed">
-              Atlas lays your itinerary out as a path, not a spreadsheet —
+            <p className="text-lg text-text-muted max-w-md mb-8 leading-relaxed">
+              Compass lays your itinerary out as a path, not a spreadsheet —
               flights, stays, and plans connected day by day, with a shared
               budget and packing list along the way.
             </p>
@@ -45,7 +49,7 @@ export default function LandingPage() {
               <Link to="/register" className="btn-primary">
                 Plan your first trip
               </Link>
-              <Link to="/login" className="text-sm text-muted hover:text-parchment transition-colors">
+              <Link to="/login" className="text-sm text-text-muted hover:text-text transition-colors">
                 I already have an account
               </Link>
             </div>
@@ -56,6 +60,7 @@ export default function LandingPage() {
               <path
                 d="M 30 380 C 100 320, 40 250, 130 220 S 250 280, 260 180 S 180 60, 300 30"
                 className="route-line animate-draw-route"
+                strokeDasharray="1000"
               />
               {[
                 { x: 30, y: 380, label: 'Depart' },
@@ -68,7 +73,7 @@ export default function LandingPage() {
                   <text
                     x={p.x + 14}
                     y={p.y + 4}
-                    className="fill-muted"
+                    fill="#8FA39C"
                     style={{ font: '11px "IBM Plex Mono", monospace' }}
                   >
                     {p.label}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Plus } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { useTripId } from '../hooks/useTripId';
 import { fetchBudget, updateBudget, selectBudgetSummary } from '../features/budget/budgetSlice';
@@ -95,7 +96,7 @@ export default function BudgetPage() {
         <CategoryPieChart breakdown={summary.categoryBreakdown} currency={summary.currency} />
       </div>
 
-      <div className="ticket p-6">
+      <div className="card p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-lg">Expenses</h2>
           <button
@@ -103,9 +104,10 @@ export default function BudgetPage() {
               setEditingExpense(null);
               setExpenseModalOpen(true);
             }}
-            className="text-sm text-route-bright hover:underline"
+            className="btn-ghost text-sm"
           >
-            + Log expense
+            <Plus className="w-3.5 h-3.5" strokeWidth={1.75} />
+            Log expense
           </button>
         </div>
         <ExpenseTable

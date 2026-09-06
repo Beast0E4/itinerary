@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { UserPlus } from 'lucide-react';
 import Modal from '../common/Modal';
 import Input from '../common/Input';
 import Dropdown from '../common/Dropdown';
@@ -31,10 +32,11 @@ export default function InviteModal({ open, onClose, onSubmit, submitting }) {
           value={form.role}
           onChange={(e) => setForm({ ...form, role: e.target.value })}
         />
-        <p className="text-xs text-parchment-text/50">
-          They'll need an existing Atlas account with this email to accept.
+        <p className="text-xs text-text-faint">
+          They'll need an existing Compass account with this email to accept.
         </p>
         <Button type="submit" loading={submitting} className="w-full">
+          <UserPlus className="w-4 h-4" strokeWidth={1.75} />
           Send invite
         </Button>
       </form>

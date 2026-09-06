@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Plus, MapPinned } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { fetchTrips, selectAllTrips, selectTripsListStatus } from '../features/trips/tripsSlice';
 import { useAuth } from '../hooks/useAuth';
@@ -28,11 +29,12 @@ export default function DashboardPage() {
           <h1 className="font-display text-display-md">
             {greeting()}, {user?.fullName?.split(' ')[0]}
           </h1>
-          <p className="text-sm text-muted mt-1">
+          <p className="text-sm text-text-muted mt-1">
             {trips.length === 0 ? 'No trips yet' : `${upcoming.length} trip${upcoming.length === 1 ? '' : 's'} in motion`}
           </p>
         </div>
         <Link to="/trips/new" className="btn-primary">
+          <Plus className="w-4 h-4" strokeWidth={1.75} />
           Plan a trip
         </Link>
       </header>
@@ -43,7 +45,8 @@ export default function DashboardPage() {
         </div>
       ) : trips.length === 0 ? (
         <EmptyState
-          title="Your atlas is empty"
+          icon={MapPinned}
+          title="Your map is empty"
           description="Start with the dates and a destination — you can fill in the route as plans firm up."
           action={
             <Link to="/trips/new">
@@ -55,7 +58,7 @@ export default function DashboardPage() {
         <div className="space-y-10">
           {upcoming.length > 0 && (
             <section>
-              <h2 className="text-sm font-medium text-muted mb-3">Upcoming & in planning</h2>
+              <h2 className="text-sm font-medium text-text-muted mb-3">Upcoming & in planning</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 {upcoming.map((trip) => (
                   <TripCard key={trip.id} trip={trip} />
@@ -66,7 +69,7 @@ export default function DashboardPage() {
 
           {past.length > 0 && (
             <section>
-              <h2 className="text-sm font-medium text-muted mb-3">Past trips</h2>
+              <h2 className="text-sm font-medium text-text-muted mb-3">Past trips</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 {past.map((trip) => (
                   <TripCard key={trip.id} trip={trip} />

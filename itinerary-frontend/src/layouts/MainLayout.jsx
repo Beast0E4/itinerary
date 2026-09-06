@@ -5,7 +5,7 @@ import Navbar from '../components/layout/Navbar';
 
 export default function MainLayout() {
   return (
-    <div className="min-h-screen flex bg-ink">
+    <div className="min-h-screen flex bg-bg">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar />

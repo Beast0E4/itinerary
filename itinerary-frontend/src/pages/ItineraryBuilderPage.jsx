@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Sparkles, Route } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { useTripId } from '../hooks/useTripId';
 import {
@@ -13,8 +14,17 @@ import {
   selectItineraryDays,
   selectItineraryStatus,
 } from '../features/itinerary/itinerarySlice';
+import {
+  requestAiPlan,
+  applyAiPlan,
+  clearAiPlan,
+  selectAiPlan,
+  selectAiPlanStatus,
+  selectAiApplyStatus,
+} from '../features/ai/aiSlice';
 import DragDropItineraryBoard from '../components/itinerary/DragDropItineraryBoard';
 import ItemFormModal from '../components/itinerary/ItemFormModal';
+import AiPlanModal from '../components/itinerary/AiPlanModal';
 import Spinner from '../components/common/Spinner';
 import EmptyState from '../components/common/EmptyState';
 import Button from '../components/common/Button';
@@ -24,12 +34,16 @@ export default function ItineraryBuilderPage() {
   const tripId = useTripId();
   const days = useAppSelector(selectItineraryDays);
   const status = useAppSelector(selectItineraryStatus);
+  const aiPlan = useAppSelector(selectAiPlan);
+  const aiPlanStatus = useAppSelector(selectAiPlanStatus);
+  const aiApplyStatus = useAppSelector(selectAiApplyStatus);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [activeDay, setActiveDay] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
 
   useEffect(() => {
     if (tripId) dispatch(fetchItinerary(tripId));
@@ -88,6 +102,21 @@ export default function ItineraryBuilderPage() {
     }
   };
 
+  const handleRequestAiPlan = (payload) => {
+    dispatch(requestAiPlan({ tripId, payload }));
+  };
+
+  const handleApplyAiPlan = async () => {
+    const result = await dispatch(applyAiPlan({ tripId, plan: aiPlan }));
+    if (result.meta.requestStatus === 'fulfilled') {
+      toast.success('AI plan applied to your trip');
+      setAiModalOpen(false);
+      dispatch(fetchItinerary(tripId));
+    } else {
+      toast.error(result.payload || 'Could not apply the plan');
+    }
+  };
+
   if (status === 'loading' && days.length === 0) {
     return (
       <div className="flex justify-center py-24">
@@ -96,29 +125,43 @@ export default function ItineraryBuilderPage() {
     );
   }
 
-  if (days.length === 0) {
-    return (
-      <EmptyState
-        title="No days on the map yet"
-        description="Generate a day for each date of your trip, then start adding stops to the route."
-        action={
-          <Button loading={generating} onClick={handleGenerate}>
-            Generate itinerary days
-          </Button>
-        }
-      />
-    );
-  }
-
   return (
     <div>
-      <DragDropItineraryBoard
-        days={days}
-        onAddItem={openAddModal}
-        onEditItem={openEditModal}
-        onDeleteItem={handleDelete}
-        onReorder={handleReorder}
-      />
+      {days.length > 0 && (
+        <div className="flex justify-end mb-6">
+          <Button variant="secondary" onClick={() => setAiModalOpen(true)}>
+            <Sparkles className="w-4 h-4" strokeWidth={1.75} />
+            Plan with AI
+          </Button>
+        </div>
+      )}
+
+      {days.length === 0 ? (
+        <EmptyState
+          icon={Route}
+          title="No days on the map yet"
+          description="Generate a day for each date of your trip, then start adding stops — or let AI propose a full plan from your budget and starting point."
+          action={
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button loading={generating} onClick={handleGenerate}>
+                Generate empty days
+              </Button>
+              <Button variant="secondary" onClick={() => setAiModalOpen(true)}>
+                <Sparkles className="w-4 h-4" strokeWidth={1.75} />
+                Plan with AI
+              </Button>
+            </div>
+          }
+        />
+      ) : (
+        <DragDropItineraryBoard
+          days={days}
+          onAddItem={openAddModal}
+          onEditItem={openEditModal}
+          onDeleteItem={handleDelete}
+          onReorder={handleReorder}
+        />
+      )}
 
       <ItemFormModal
         open={modalOpen}
@@ -126,6 +169,17 @@ export default function ItineraryBuilderPage() {
         onSubmit={handleSubmit}
         initialValues={editingItem}
         submitting={submitting}
+      />
+
+      <AiPlanModal
+        open={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        plan={aiPlan}
+        planStatus={aiPlanStatus}
+        applyStatus={aiApplyStatus}
+        onRequestPlan={handleRequestAiPlan}
+        onApplyPlan={handleApplyAiPlan}
+        onDiscard={() => dispatch(clearAiPlan())}
       />
     </div>
   );

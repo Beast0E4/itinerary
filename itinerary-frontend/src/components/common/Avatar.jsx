@@ -11,7 +11,7 @@ export default function Avatar({ name, size = 'md', className }) {
   return (
     <div
       className={clsx(
-        'rounded-full bg-waypoint/20 text-waypoint flex items-center justify-center font-mono font-semibold shrink-0',
+        'rounded-full bg-accent-subtle text-accent flex items-center justify-center font-semibold shrink-0',
         sizes[size],
         className
       )}

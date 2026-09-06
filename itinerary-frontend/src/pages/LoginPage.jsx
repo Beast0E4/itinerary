@@ -29,7 +29,7 @@ export default function LoginPage() {
   return (
     <div>
       <h1 className="font-display text-display-md mb-2">Welcome back</h1>
-      <p className="text-sm text-muted mb-8">Sign in to pick up where you left off.</p>
+      <p className="text-sm text-text-muted mb-8">Sign in to pick up where you left off.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -58,9 +58,9 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <p className="text-sm text-muted mt-6">
-        New to Atlas?{' '}
-        <Link to="/register" className="text-route-bright hover:underline">
+      <p className="text-sm text-text-muted mt-6">
+        New to Compass?{' '}
+        <Link to="/register" className="text-accent hover:text-accent-hover hover:underline">
           Create an account
         </Link>
       </p>

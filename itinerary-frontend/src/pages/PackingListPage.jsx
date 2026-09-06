@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Luggage } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { useTripId } from '../hooks/useTripId';
 import {
@@ -73,7 +74,7 @@ export default function PackingListPage() {
 
   return (
     <div>
-      <form onSubmit={handleAdd} className="ticket p-5 mb-6 flex flex-wrap items-end gap-3">
+      <form onSubmit={handleAdd} className="card p-5 mb-6 flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-[160px]">
           <Input
             label="Add item"
@@ -106,6 +107,7 @@ export default function PackingListPage() {
 
       {items.length === 0 ? (
         <EmptyState
+          icon={Luggage}
           title="Nothing on the list yet"
           description="Add items above — group them by category to keep packing simple."
         />

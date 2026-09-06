@@ -3,25 +3,26 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-surface-hair;
-  }
-
   html {
     color-scheme: dark;
   }
 
   body {
-    @apply bg-ink text-parchment font-sans antialiased;
+    @apply bg-bg text-text font-sans antialiased;
   }
 
   h1, h2, h3 {
-    @apply font-display text-parchment;
+    @apply font-display text-text;
+  }
+
+  ::selection {
+    background: rgba(79, 191, 159, 0.3);
   }
 
   :focus-visible {
-    outline: 2px solid theme('colors.route.bright');
+    outline: 2px solid theme('colors.accent.DEFAULT');
     outline-offset: 2px;
+    border-radius: 4px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -34,66 +35,77 @@
 }
 
 @layer components {
-  .ticket {
-    @apply bg-parchment text-parchment-text rounded-ticket;
+  /* Primary content surface — used everywhere a card was previously
+     "ticket parchment". One consistent elevation system, no color swap. */
+  .card {
+    @apply bg-surface border border-surface-border rounded-lg shadow-card;
   }
 
-  .ticket-perf {
-    position: relative;
-  }
-
-  .ticket-perf::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: var(--perf-left, 62%);
-    width: 0;
-    border-left: 2px dashed rgba(28, 38, 34, 0.18);
+  .card-hover {
+    @apply transition-colors hover:bg-surface-hover hover:border-accent/30;
   }
 
   .route-line {
-    stroke: theme('colors.route.DEFAULT');
+    stroke: theme('colors.accent.DEFAULT');
     stroke-width: 2;
     fill: none;
-    stroke-dasharray: 1000;
+    stroke-linecap: round;
   }
 
   .waypoint-dot {
-    @apply bg-route border-2 border-ink rounded-full;
-  }
-
-  .stub-edge {
-    background-image: radial-gradient(circle at 0 50%, transparent 6px, theme('colors.surface.DEFAULT') 6.5px);
-    background-size: 16px 16px;
-    background-repeat: repeat-y;
+    fill: theme('colors.accent.DEFAULT');
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-route text-ink font-sans font-semibold
-           px-5 py-2.5 rounded-stub transition-colors hover:bg-route-bright
-           disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 bg-accent text-bg font-semibold
+           px-4 py-2.5 rounded-md transition-colors hover:bg-accent-hover
+           disabled:opacity-40 disabled:pointer-events-none;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 bg-transparent text-parchment font-sans font-medium
-           px-5 py-2.5 rounded-stub border border-surface-hair transition-colors
-           hover:border-route hover:text-route-bright
-           disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-text font-medium
+           px-4 py-2.5 rounded-md border border-surface-border transition-colors
+           hover:border-accent/50 hover:text-accent
+           disabled:opacity-40 disabled:pointer-events-none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 text-sm font-medium text-text-muted
+           transition-colors hover:text-accent disabled:opacity-40 disabled:pointer-events-none;
+  }
+
+  .btn-danger-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 text-sm font-medium text-text-muted
+           transition-colors hover:text-danger disabled:opacity-40 disabled:pointer-events-none;
   }
 
   .input-field {
-    @apply w-full bg-surface border border-surface-hair rounded-stub px-4 py-2.5
-           text-parchment placeholder:text-muted font-sans
-           focus:border-route focus:outline-none transition-colors;
+    @apply w-full bg-bg-soft border border-surface-border rounded-md px-3.5 py-2.5
+           text-text placeholder:text-text-faint text-sm
+           focus:border-accent focus:outline-none transition-colors;
   }
 
   .data-mono {
-    @apply font-mono text-sm tracking-tight;
+    @apply font-mono text-sm tracking-tight text-text-muted;
   }
 
-  .badge-stamp {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-medium
-           border border-current;
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-accent {
+    @apply badge bg-accent-subtle text-accent;
+  }
+
+  .badge-warn {
+    @apply badge bg-warn-subtle text-warn;
+  }
+
+  .badge-danger {
+    @apply badge bg-danger-subtle text-danger;
+  }
+
+  .badge-muted {
+    @apply badge bg-surface-hover text-text-muted;
   }
 }

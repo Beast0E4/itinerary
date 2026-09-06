@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { MapPin, ArrowRight } from 'lucide-react';
 import Badge from '../common/Badge';
 import { formatDateRange, tripDurationDays } from '../../utils/dateHelpers';
 
@@ -9,30 +10,31 @@ export default function TripCard({ trip }) {
   return (
     <Link
       to={`/trips/${trip.id}`}
-      className="ticket ticket-perf block p-0 overflow-hidden group"
-      style={{ '--perf-left': '72%' }}
+      className="card card-hover block p-5 group relative overflow-hidden"
     >
-      <div className="grid grid-cols-[1fr_auto]">
-        <div className="p-5 min-w-0">
-          <div className="flex items-center gap-2 mb-3">
-            <Badge tone={trip.status}>{trip.status.toLowerCase()}</Badge>
-            <span className="data-mono text-xs text-parchment-text/50">
-              {trip.destinationCount} {trip.destinationCount === 1 ? 'stop' : 'stops'}
-            </span>
-          </div>
-          <h3 className="font-display text-xl mb-1 truncate group-hover:text-route-soft transition-colors">
-            {trip.title}
-          </h3>
-          <p className="data-mono text-xs text-parchment-text/60">
-            {formatDateRange(trip.startDate, trip.endDate)}
-          </p>
-        </div>
+      <div className="flex items-start justify-between mb-4">
+        <Badge tone={trip.status}>{trip.status.toLowerCase()}</Badge>
+        <ArrowRight className="w-4 h-4 text-text-faint group-hover:text-accent group-hover:translate-x-0.5 transition-all" strokeWidth={1.75} />
+      </div>
 
-        <div className="flex flex-col items-center justify-center px-5 border-l border-dashed border-parchment-text/15 bg-parchment-dim/50">
-          <span className="font-display text-3xl leading-none">{nights}</span>
-          <span className="data-mono text-[10px] uppercase tracking-wide text-parchment-text/50 mt-1">
-            {nights === 1 ? 'day' : 'days'}
+      <h3 className="font-display text-xl mb-2 truncate">
+        {trip.title}
+      </h3>
+
+      <div className="flex items-center gap-4 text-sm text-text-muted">
+        <span className="data-mono">{formatDateRange(trip.startDate, trip.endDate)}</span>
+      </div>
+
+      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-surface-border">
+        <div className="flex items-center gap-1.5">
+          <MapPin className="w-3.5 h-3.5 text-text-faint" strokeWidth={1.75} />
+          <span className="data-mono text-xs">
+            {trip.destinationCount} {trip.destinationCount === 1 ? 'stop' : 'stops'}
           </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="font-display text-lg leading-none text-text">{nights}</span>
+          <span className="data-mono text-xs">{nights === 1 ? 'day' : 'days'}</span>
         </div>
       </div>
     </Link>

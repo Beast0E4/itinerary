@@ -46,7 +46,7 @@ export default function TripForm({ initialValues, onSubmit, submitting }) {
       />
 
       <div>
-        <label className="block text-sm font-medium text-parchment/90 mb-1.5">Description</label>
+        <label className="block text-sm font-medium text-text mb-1.5">Description</label>
         <textarea
           className="input-field min-h-[88px] resize-y"
           placeholder="What's this trip about?"

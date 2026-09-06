@@ -1,16 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Compass } from 'lucide-react';
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-ink px-6 text-center">
-      <svg viewBox="0 0 120 120" width="80" height="80" className="mb-6 text-route-soft" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="60" cy="60" r="45" strokeDasharray="6 6" />
-        <path d="M40 70 L80 50" strokeLinecap="round" />
-        <circle cx="40" cy="70" r="4" fill="currentColor" stroke="none" />
-      </svg>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-bg px-6 text-center">
+      <div className="w-14 h-14 rounded-full bg-accent-subtle flex items-center justify-center mb-5">
+        <Compass className="w-7 h-7 text-accent" strokeWidth={1.75} />
+      </div>
       <h1 className="font-display text-display-md mb-2">Off the map</h1>
-      <p className="text-sm text-muted mb-6 max-w-xs">
+      <p className="text-sm text-text-muted mb-6 max-w-xs">
         This page isn't on the route. Let's get you back to known ground.
       </p>
       <Link to="/dashboard" className="btn-primary">

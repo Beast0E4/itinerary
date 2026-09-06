@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 
-export default function Modal({ open, onClose, title, children, footer }) {
+export default function Modal({ open, onClose, title, children, footer, size = 'md' }) {
   useEffect(() => {
     if (!open) return;
     const onEsc = (e) => e.key === 'Escape' && onClose();
@@ -15,10 +16,12 @@ export default function Modal({ open, onClose, title, children, footer }) {
 
   if (!open) return null;
 
+  const widths = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-2xl' };
+
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-ink/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -26,18 +29,16 @@ export default function Modal({ open, onClose, title, children, footer }) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative ticket w-full max-w-md p-6 animate-rise-in max-h-[85vh] overflow-y-auto"
+        className={`relative bg-surface-elevated border border-surface-border rounded-lg shadow-modal w-full ${widths[size]} p-6 animate-rise-in max-h-[85vh] overflow-y-auto`}
       >
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-display text-xl">{title}</h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="text-parchment-text/50 hover:text-parchment-text transition-colors p-1"
+            className="text-text-faint hover:text-text transition-colors p-1 rounded-md hover:bg-surface-hover"
           >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
-            </svg>
+            <X className="w-5 h-5" />
           </button>
         </div>
         <div>{children}</div>

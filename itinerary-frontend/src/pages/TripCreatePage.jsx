@@ -26,8 +26,8 @@ export default function TripCreatePage() {
   return (
     <div className="max-w-lg">
       <h1 className="font-display text-display-md mb-1">Plan a new trip</h1>
-      <p className="text-sm text-muted mb-8">Start loose — dates and a title are all you need.</p>
-      <div className="ticket p-6">
+      <p className="text-sm text-text-muted mb-8">Start loose — dates and a title are all you need.</p>
+      <div className="card p-6">
         <TripForm onSubmit={handleSubmit} submitting={submitting} />
       </div>
     </div>

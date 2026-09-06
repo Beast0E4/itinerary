@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../features/auth/authSlice';
 import tripsReducer from '../features/trips/tripsSlice';
+import aiReducer from '../features/ai/aiSlice'
 import itineraryReducer from '../features/itinerary/itinerarySlice';
 import expensesReducer from '../features/expenses/expensesSlice';
 import budgetReducer from '../features/budget/budgetSlice';
@@ -17,6 +18,7 @@ export const store = configureStore({
     budget: budgetReducer,
     packing: packingReducer,
     collaborators: collaboratorsReducer,
+    ai: aiReducer,
     ui: uiReducer,
   },
   devTools: import.meta.env.DEV,

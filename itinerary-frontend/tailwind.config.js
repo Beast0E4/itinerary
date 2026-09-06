@@ -4,48 +4,55 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: {
-          DEFAULT: '#12201E',
-          soft: '#16241F',
+        bg: {
+          DEFAULT: '#0C1412',
+          soft: '#101B18',
         },
         surface: {
-          DEFAULT: '#1B2B28',
-          raised: '#233634',
-          hair: '#2C423E',
+          DEFAULT: '#141F1C',
+          hover: '#1A2925',
+          elevated: '#182420',
+          border: '#223330',
         },
-        parchment: {
-          DEFAULT: '#F3ECDA',
-          dim: '#E9DFC6',
-          text: '#1C2622',
+        text: {
+          DEFAULT: '#EDF3F0',
+          muted: '#8FA39C',
+          faint: '#5E736C',
         },
-        route: {
-          DEFAULT: '#4FA491',
-          soft: '#3B7E70',
-          bright: '#6FC4B0',
+        accent: {
+          DEFAULT: '#4FBF9F',
+          hover: '#63D4B3',
+          subtle: 'rgba(79,191,159,0.12)',
         },
-        waypoint: {
-          DEFAULT: '#DE9F52',
-          soft: '#C6863B',
+        warn: {
+          DEFAULT: '#E8A34D',
+          subtle: 'rgba(232,163,77,0.12)',
         },
-        muted: '#8AA69E',
-        danger: '#C4614C',
+        danger: {
+          DEFAULT: '#E2685A',
+          subtle: 'rgba(226,104,90,0.12)',
+        },
       },
       fontFamily: {
         display: ['"Fraunces"', 'ui-serif', 'Georgia', 'serif'],
-        sans: ['"Manrope"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       fontSize: {
-        'display-xl': ['4.5rem', { lineHeight: '1.02', letterSpacing: '-0.02em' }],
-        'display-lg': ['3rem', { lineHeight: '1.05', letterSpacing: '-0.02em' }],
-        'display-md': ['2rem', { lineHeight: '1.1', letterSpacing: '-0.01em' }],
+        'display-xl': ['3.75rem', { lineHeight: '1.05', letterSpacing: '-0.02em' }],
+        'display-lg': ['2.75rem', { lineHeight: '1.08', letterSpacing: '-0.02em' }],
+        'display-md': ['1.875rem', { lineHeight: '1.15', letterSpacing: '-0.01em' }],
       },
       borderRadius: {
-        stub: '4px',
-        ticket: '18px',
+        sm: '8px',
+        md: '12px',
+        lg: '16px',
+        xl: '20px',
       },
       boxShadow: {
-        ticket: '0 1px 0 rgba(0,0,0,0.25)',
+        card: '0 1px 0 rgba(255,255,255,0.03) inset, 0 8px 24px -12px rgba(0,0,0,0.5)',
+        modal: '0 24px 64px -20px rgba(0,0,0,0.6)',
+        glow: '0 0 0 1px rgba(79,191,159,0.4), 0 0 24px -4px rgba(79,191,159,0.35)',
       },
       keyframes: {
         'draw-route': {
@@ -53,13 +60,18 @@ export default {
           to: { strokeDashoffset: '0' },
         },
         'rise-in': {
-          from: { opacity: '0', transform: 'translateY(6px)' },
+          from: { opacity: '0', transform: 'translateY(8px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
         },
       },
       animation: {
         'draw-route': 'draw-route 1.1s ease-out forwards',
-        'rise-in': 'rise-in 0.4s ease-out forwards',
+        'rise-in': 'rise-in 0.25s ease-out forwards',
+        'fade-in': 'fade-in 0.2s ease-out forwards',
       },
     },
   },

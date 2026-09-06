@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowRight, Route } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { useTripId } from '../hooks/useTripId';
 import { selectCurrentTrip } from '../features/trips/tripsSlice';
 import { fetchBudget, selectBudgetSummary } from '../features/budget/budgetSlice';
 import { fetchItinerary, selectItineraryDays } from '../features/itinerary/itinerarySlice';
+import TripHero from '../components/trip/TripHero';
 import TripStatsBar from '../components/trip/TripStatsBar';
 import EmptyState from '../components/common/EmptyState';
 import Button from '../components/common/Button';
@@ -26,45 +28,56 @@ export default function TripDetailPage() {
   if (!trip) return null;
 
   return (
-    <div className="space-y-8">
-      <TripStatsBar trip={trip} budgetSummary={budgetSummary} dayCount={days.length} />
+    <div>
+      <TripHero trip={trip} />
 
-      {trip.description && (
-        <div className="ticket p-6">
-          <h2 className="text-sm font-medium text-parchment-text/60 mb-2">About this trip</h2>
-          <p className="text-parchment-text leading-relaxed">{trip.description}</p>
-        </div>
-      )}
+      <div className="space-y-8">
+        <TripStatsBar trip={trip} budgetSummary={budgetSummary} dayCount={days.length} />
 
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-medium text-muted">Route so far</h2>
-          <Link to={`/trips/${tripId}/itinerary`} className="text-sm text-route-bright hover:underline">
-            Open itinerary builder →
-          </Link>
-        </div>
-
-        {days.length === 0 ? (
-          <EmptyState
-            title="No days planned yet"
-            description="Add your first stop and Atlas will lay out the route as you go."
-            action={
-              <Link to={`/trips/${tripId}/itinerary`}>
-                <Button>Start the itinerary</Button>
-              </Link>
-            }
-          />
-        ) : (
-          <div className="ticket p-6 grid sm:grid-cols-3 gap-4">
-            {days.slice(0, 6).map((day) => (
-              <div key={day.id} className="border-l-2 border-route pl-3">
-                <p className="data-mono text-xs text-parchment-text/50">Day {day.dayNumber}</p>
-                <p className="font-medium text-sm truncate">{day.title || `${day.items.length} planned`}</p>
-              </div>
-            ))}
+        {trip.description && (
+          <div className="card p-6">
+            <h2 className="text-sm font-medium text-text-muted mb-2">About this trip</h2>
+            <p className="text-text leading-relaxed">{trip.description}</p>
           </div>
         )}
-      </section>
+
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-medium text-text-muted">Route so far</h2>
+            <Link
+              to={`/trips/${tripId}/itinerary`}
+              className="text-sm text-accent hover:text-accent-hover hover:underline flex items-center gap-1"
+            >
+              Open itinerary builder
+              <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.75} />
+            </Link>
+          </div>
+
+          {days.length === 0 ? (
+            <EmptyState
+              icon={Route}
+              title="No days planned yet"
+              description="Add your first stop and Compass will lay out the route as you go."
+              action={
+                <Link to={`/trips/${tripId}/itinerary`}>
+                  <Button>Start the itinerary</Button>
+                </Link>
+              }
+            />
+          ) : (
+            <div className="card p-6 grid sm:grid-cols-3 gap-4">
+              {days.slice(0, 6).map((day) => (
+                <div key={day.id} className="border-l-2 border-accent pl-3">
+                  <p className="data-mono text-xs">Day {day.dayNumber}</p>
+                  <p className="font-medium text-sm text-text truncate">
+                    {day.title || `${day.items.length} planned`}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

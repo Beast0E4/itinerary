@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { ArrowLeft, MapPin } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { useTripId } from '../hooks/useTripId';
 import { fetchTrip, selectCurrentTrip, selectTripDetailStatus, clearCurrentTrip } from '../features/trips/tripsSlice';
@@ -30,7 +31,7 @@ export default function TripLayout() {
   }, [tripId, dispatch]);
 
   return (
-    <div className="min-h-screen flex bg-ink">
+    <div className="min-h-screen flex bg-bg">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar />
@@ -40,9 +41,10 @@ export default function TripLayout() {
               <Spinner />
             </div>
           ) : status === 'failed' ? (
-            <div className="ticket p-8 text-center">
+            <div className="card p-8 text-center">
+              <MapPin className="w-8 h-8 text-text-faint mx-auto mb-3" strokeWidth={1.5} />
               <p className="font-display text-xl mb-2">This trip isn't reachable</p>
-              <p className="text-sm text-parchment-text/70 mb-4">
+              <p className="text-sm text-text-muted mb-4">
                 It may have been removed, or you may not have access.
               </p>
               <button className="btn-secondary" onClick={() => navigate('/dashboard')}>
@@ -54,17 +56,18 @@ export default function TripLayout() {
               <header className="mb-8">
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="data-mono text-xs text-muted hover:text-route-bright transition-colors mb-3"
+                  className="btn-ghost text-xs mb-3"
                 >
-                  ← all trips
+                  <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.75} />
+                  all trips
                 </button>
                 <h1 className="font-display text-display-md">{trip.title}</h1>
-                <p className="data-mono text-sm text-muted mt-1">
+                <p className="data-mono text-sm mt-1">
                   {formatDateRange(trip.startDate, trip.endDate)}
                 </p>
               </header>
 
-              <nav className="flex gap-1 border-b border-surface-hair mb-8 overflow-x-auto">
+              <nav className="flex gap-1 border-b border-surface-border mb-8 overflow-x-auto">
                 {TABS.map((tab) => (
                   <NavLink
                     key={tab.label}
@@ -74,8 +77,8 @@ export default function TripLayout() {
                       clsx(
                         'px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
                         isActive
-                          ? 'border-route text-route-bright'
-                          : 'border-transparent text-muted hover:text-parchment'
+                          ? 'border-accent text-accent'
+                          : 'border-transparent text-text-muted hover:text-text'
                       )
                     }
                   >

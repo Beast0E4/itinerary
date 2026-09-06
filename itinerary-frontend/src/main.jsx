@@ -18,14 +18,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             position="bottom-right"
             toastOptions={{
               style: {
-                background: '#233634',
-                color: '#F3ECDA',
-                border: '1px solid #2C423E',
-                fontFamily: 'Manrope, sans-serif',
+                background: '#182420',
+                color: '#EDF3F0',
+                border: '1px solid #223330',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 fontSize: '14px',
               },
-              success: { iconTheme: { primary: '#4FA491', secondary: '#12201E' } },
-              error: { iconTheme: { primary: '#C4614C', secondary: '#12201E' } },
+              success: { iconTheme: { primary: '#4FBF9F', secondary: '#0C1412' } },
+              error: { iconTheme: { primary: '#E2685A', secondary: '#0C1412' } },
             }}
           />
         </BrowserRouter>
