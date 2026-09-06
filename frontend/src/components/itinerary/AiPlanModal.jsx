@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, Navigation, Loader2, MapPin, Calendar } from 'lucide-react';
 import Modal from '../common/Modal';
 import Input from '../common/Input';
+import TagInput from '../common/TagInput';
 import Dropdown from '../common/Dropdown';
 import Button from '../common/Button';
 import { useGeolocation } from '../../hooks/useGeolocation';
@@ -22,13 +23,16 @@ export default function AiPlanModal({
   plan,
   planStatus,
   applyStatus,
+  error,
   onRequestPlan,
   onApplyPlan,
   onDiscard,
 }) {
   const { coords, status: geoStatus, error: geoError, requestLocation } = useGeolocation();
+  const [locationSource, setLocationSource] = useState(null); // 'coords' | 'text' | null
   const [form, setForm] = useState({
     startLocationText: '',
+    destinations: [],
     budget: '',
     currency: 'USD',
     preferences: '',
@@ -36,12 +40,27 @@ export default function AiPlanModal({
 
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
+  const handleUseLocation = () => {
+    requestLocation();
+    setLocationSource('coords');
+    setForm({ ...form, startLocationText: '' });
+  };
+
+  const handleTextChange = (e) => {
+    setLocationSource(e.target.value ? 'text' : null);
+    setForm({ ...form, startLocationText: e.target.value });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Exactly one of (lat/lng) or (text) is sent — never both, and never
+    // neither, so the AI service never has to guess which one to trust.
+    const usingCoords = locationSource === 'coords' && coords;
     onRequestPlan({
-      startLatitude: coords?.latitude ?? null,
-      startLongitude: coords?.longitude ?? null,
-      startLocationText: form.startLocationText || null,
+      startLatitude: usingCoords ? coords.latitude : null,
+      startLongitude: usingCoords ? coords.longitude : null,
+      startLocationText: usingCoords ? null : (form.startLocationText || null),
+      destinations: form.destinations,
       budget: Number(form.budget),
       currency: form.currency,
       preferences: form.preferences || null,
@@ -71,26 +90,40 @@ export default function AiPlanModal({
                 type="button"
                 variant="secondary"
                 className="!py-2 text-sm w-full"
-                onClick={requestLocation}
+                onClick={handleUseLocation}
                 loading={geoStatus === 'loading'}
               >
                 <Navigation className="w-3.5 h-3.5" strokeWidth={1.75} />
                 Use my current location
               </Button>
             </div>
-            {coords && (
+            {locationSource === 'coords' && coords && (
               <p className="text-xs text-accent flex items-center gap-1.5 mb-2">
                 <MapPin className="w-3 h-3" strokeWidth={2} />
-                Location captured ({coords.latitude.toFixed(2)}, {coords.longitude.toFixed(2)})
+                Using your location ({coords.latitude.toFixed(2)}, {coords.longitude.toFixed(2)})
               </p>
             )}
             {geoError && <p className="text-xs text-warn mb-2">{geoError}</p>}
             <Input
               placeholder="Or type your starting city"
               value={form.startLocationText}
-              onChange={update('startLocationText')}
+              onChange={handleTextChange}
+              disabled={locationSource === 'coords'}
             />
+            {locationSource === 'coords' && (
+              <p className="text-xs text-text-faint mt-1">
+                Clear your captured location above to type a city instead.
+              </p>
+            )}
           </div>
+
+          <TagInput
+            label="Places you want to visit (optional)"
+            placeholder="e.g. Manali — press Enter to add"
+            hint="Add as many as you like, or leave empty to let the AI choose the destination(s) within your budget."
+            values={form.destinations}
+            onChange={(destinations) => setForm({ ...form, destinations })}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <Input
@@ -115,10 +148,22 @@ export default function AiPlanModal({
             />
           </div>
 
-          <Button type="submit" loading={planStatus === 'loading'} className="w-full">
+          <Button type="submit" loading={planStatus === 'loading'} disabled={!locationSource} className="w-full">
             <Sparkles className="w-4 h-4" strokeWidth={1.75} />
             Generate plan
           </Button>
+
+          {!locationSource && (
+            <p className="text-xs text-text-faint text-center">
+              Use your current location or type a starting city to continue.
+            </p>
+          )}
+
+          {planStatus === 'failed' && (
+            <p className="text-sm text-danger bg-danger-subtle rounded-md px-4 py-3">
+              {error || 'Could not generate a plan. Please try again.'}
+            </p>
+          )}
         </form>
       ) : (
         <div className="space-y-5">
