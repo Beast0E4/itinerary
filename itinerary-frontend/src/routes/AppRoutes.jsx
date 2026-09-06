@@ -1,10 +1,11 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 import AuthLayout from '../layouts/AuthLayout';
 import MainLayout from '../layouts/MainLayout';
 import TripLayout from '../layouts/TripLayout';
 import ProtectedRoute from './ProtectedRoute';
+import GuestRoute from './GuestRoute';
 
 import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/LoginPage';
@@ -24,10 +25,12 @@ export default function AppRoutes() {
       {/* Public marketing page */}
       <Route path="/" element={<LandingPage />} />
 
-      {/* Auth flows */}
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+      {/* Auth flows — redirect away automatically if already signed in */}
+      <Route element={<GuestRoute />}>
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
       </Route>
 
       {/* Authenticated app shell */}
