@@ -19,6 +19,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -41,7 +42,7 @@ public class AiPlannerServiceImpl implements AiPlannerService {
         Trip trip = findTripOrThrow(tripId);
         assertEditable(tripId, userId);
 
-        try {
+        try {            
             return aiRestTemplate.postForObject(aiAgentUrl + "/plan", request, AiTripPlanResponse.class);
         } catch (RestClientException ex) {
             throw new BadRequestException(
@@ -64,13 +65,13 @@ public class AiPlannerServiceImpl implements AiPlannerService {
             for (AiTripPlanResponse.ProposedDestination proposedDestination : plan.getDestinations()) {
                 Destination destination = Destination.builder()
                         .trip(trip)
-                        .name(proposedDestination.getName())
+                        .name(proposedDestination.getName() != null ? proposedDestination.getName() : "Unknown Destination")
                         .country(proposedDestination.getCountry())
                         .city(proposedDestination.getCity())
                         .latitude(proposedDestination.getLatitude())
                         .longitude(proposedDestination.getLongitude())
-                        .arrivalDate(proposedDestination.getArrivalDate())
-                        .departureDate(proposedDestination.getDepartureDate())
+                        .arrivalDate(proposedDestination.getArrivalDate() != null ? proposedDestination.getArrivalDate() : trip.getStartDate())
+                        .departureDate(proposedDestination.getDepartureDate() != null ? proposedDestination.getDepartureDate() : trip.getEndDate())
                         .displayOrder(destOrder++)
                         .build();
                 destinationRepository.save(destination);
@@ -82,11 +83,15 @@ public class AiPlannerServiceImpl implements AiPlannerService {
         dayRepository.deleteAll(existingDays);
 
         if (plan.getDays() != null) {
+            int dayIndex = 0;
             for (AiTripPlanResponse.ProposedDay proposedDay : plan.getDays()) {
+                Integer dayNum = proposedDay.getDayNumber() != null ? proposedDay.getDayNumber() : (dayIndex + 1);
+                LocalDate dayDate = proposedDay.getDate() != null ? proposedDay.getDate() : trip.getStartDate().plusDays(dayNum - 1);
+                
                 ItineraryDay day = ItineraryDay.builder()
                         .trip(trip)
-                        .dayNumber(proposedDay.getDayNumber())
-                        .date(proposedDay.getDate())
+                        .dayNumber(dayNum)
+                        .date(dayDate)
                         .title(proposedDay.getTitle())
                         .build();
                 ItineraryDay savedDay = dayRepository.save(day);
@@ -97,7 +102,7 @@ public class AiPlannerServiceImpl implements AiPlannerService {
                         ItineraryItem item = ItineraryItem.builder()
                                 .itineraryDay(savedDay)
                                 .itemType(parseItemType(proposedItem.getItemType()))
-                                .title(proposedItem.getTitle())
+                                .title(proposedItem.getTitle() != null ? proposedItem.getTitle() : "Planned Activity")
                                 .description(proposedItem.getDescription())
                                 .locationName(proposedItem.getLocationName())
                                 .latitude(proposedItem.getLatitude())
@@ -106,12 +111,12 @@ public class AiPlannerServiceImpl implements AiPlannerService {
                                 .endTime(proposedItem.getEndTime())
                                 .displayOrder(order++)
                                 .cost(proposedItem.getEstimatedCost())
-                                .currency(proposedItem.getCurrency() != null
-                                        ? proposedItem.getCurrency() : trip.getPrimaryCurrency())
+                                .currency(proposedItem.getCurrency() != null ? proposedItem.getCurrency() : trip.getPrimaryCurrency())
                                 .build();
                         itemRepository.save(item);
                     }
                 }
+                dayIndex++;
             }
         }
 
@@ -126,6 +131,7 @@ public class AiPlannerServiceImpl implements AiPlannerService {
             budget.setFoodLimit(nonNullOr(suggestion.getFoodLimit(), budget.getFoodLimit()));
             budget.setActivitiesLimit(nonNullOr(suggestion.getActivitiesLimit(), budget.getActivitiesLimit()));
             budget.setMiscLimit(nonNullOr(suggestion.getMiscLimit(), budget.getMiscLimit()));
+
             budgetRepository.save(budget);
         }
 

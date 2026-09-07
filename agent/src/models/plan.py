@@ -40,7 +40,7 @@ class ProposedItem(BaseModel):
 
 class ProposedDay(BaseModel):
     dayNumber: Optional[int] = None
-    date: Optional[date] = None
+    date: Optional[str] = None
     title: Optional[str] = None
     items: List[ProposedItem] = Field(default_factory=list)
 

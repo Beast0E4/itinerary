@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from langchain_core.output_parsers import PydanticOutputParser
 from src.models.plan import AiTripPlanRequest, AiTripPlanResponse
 
@@ -27,13 +29,12 @@ def generate_trip_plan(request: AiTripPlanRequest) -> AiTripPlanResponse:
     try:
         agent_result = run_agent(agent_input_dict)
         
-        # Parse the raw text output back into the Pydantic response model
         response_obj = parser.parse(agent_result["output"])
         response_obj.status = "SUCCESS"
         
+        print(response_obj, flush=True)
+        
         return response_obj
         
-    except Exception as e:
-        return AiTripPlanResponse(
-            status=f"FAILED: {str(e)}"
-        )
+    except Exception as e:        
+        raise HTTPException(status_code=500, detail=f"Parse Error: {str(e)}")

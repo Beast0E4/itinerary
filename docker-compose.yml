@@ -4,13 +4,18 @@ services:
       context: ./backend
     ports:
       - "8080:8080"
+    env_file:                      
+      - ./backend/.env
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - AI_AGENT_URL=http://agent:8000
     restart: unless-stopped
 
   agent:
     build: 
       context: ./agent
+    env_file:                      
+      - ./agent/.env
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
@@ -20,6 +25,8 @@ services:
       context: ./frontend
     ports:
       - "80:80"
+    env_file:                      
+      - ./agent/.env
     depends_on:
       - backend
       - agent

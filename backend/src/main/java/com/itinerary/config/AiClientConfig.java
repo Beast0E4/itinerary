@@ -14,7 +14,7 @@ public class AiClientConfig {
     public RestTemplate aiRestTemplate(RestTemplateBuilder builder) {
         return builder
                 .setConnectTimeout(Duration.ofSeconds(5))
-                .setReadTimeout(Duration.ofSeconds(60)) // planning calls can take a while
+                .setReadTimeout(Duration.ofSeconds(300))
                 .build();
     }
 }
