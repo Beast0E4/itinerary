@@ -12,5 +12,4 @@ def tool_catalog () -> list[dict[str, str]]:
      """
      Name + Description of all tools
      """
-     
      return [{"name": tool.name, "description": tool.description} for tool in ALL_TOOLS]
