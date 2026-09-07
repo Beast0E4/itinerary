@@ -29,15 +29,6 @@ public class BudgetServiceImpl implements BudgetService {
     private final ExpenseRepository expenseRepository;
     private final TripRepository tripRepository;
 
-    private static final Map<ExpenseCategory, String> CATEGORY_LABELS = Map.of(
-            ExpenseCategory.ACCOMMODATION, "accommodation",
-            ExpenseCategory.TRANSPORT, "transport",
-            ExpenseCategory.FOOD, "food",
-            ExpenseCategory.ACTIVITIES, "activities",
-            ExpenseCategory.SHOPPING, "misc",
-            ExpenseCategory.MISC, "misc"
-    );
-
     @Override
     public BudgetSummaryResponse getBudgetSummary(Long userId, Long tripId) {
         assertAccessible(tripId, userId);

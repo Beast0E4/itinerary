@@ -10,13 +10,13 @@ packing lists, and trip collaboration.
 
 ## Project structure
 ```
-itinerary-backend/    Spring Boot API
+backend/    Spring Boot API
 itinerary-frontend/   React SPA
 ```
 
 ## Backend setup
 
-1. `cd itinerary-backend`
+1. `cd backend`
 2. Copy `.env.example` to `.env` and fill in your MySQL + JWT values:
    ```
    DB_HOST=...

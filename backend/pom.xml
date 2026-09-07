@@ -12,9 +12,9 @@
     </parent>
 
     <groupId>com.itinerary</groupId>
-    <artifactId>itinerary-backend</artifactId>
+    <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>itinerary-backend</name>
+    <name>backend</name>
     <description>Dynamic Travel Itinerary App - Backend API</description>
     <packaging>jar</packaging>
 

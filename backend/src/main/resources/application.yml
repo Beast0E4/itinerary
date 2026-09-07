@@ -1,6 +1,6 @@
 spring:
   application:
-    name: itinerary-backend
+    name: backend
   datasource:
     url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=true&requireSSL=true&serverTimezone=UTC
     username: ${DB_USER}
@@ -24,3 +24,7 @@ server:
 jwt:
   secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+ai:
+  agent:
+    url: ${AI_AGENT_URL:http://localhost:8000}
