@@ -1,5 +1,6 @@
 package com.itinerary.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itinerary.dto.request.AiTripPlanRequest;
 import com.itinerary.dto.response.AiTripPlanResponse;
 import com.itinerary.dto.response.TripResponse;
@@ -11,22 +12,34 @@ import com.itinerary.mapper.TripMapper;
 import com.itinerary.repository.*;
 import com.itinerary.service.AiPlannerService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiPlannerServiceImpl implements AiPlannerService {
 
+    private static final Duration STREAM_TIMEOUT = Duration.ofMinutes(3);
+
     private final RestTemplate aiRestTemplate;
+    private final WebClient aiWebClient;
+    private final ObjectMapper objectMapper;
     private final TripRepository tripRepository;
     private final DestinationRepository destinationRepository;
     private final ItineraryDayRepository dayRepository;
@@ -42,7 +55,11 @@ public class AiPlannerServiceImpl implements AiPlannerService {
         Trip trip = findTripOrThrow(tripId);
         assertEditable(tripId, userId);
 
-        try {            
+        // Inject dates directly from the database record
+        request.setStartDate(trip.getStartDate().toString());
+        request.setEndDate(trip.getEndDate().toString());
+
+        try {
             return aiRestTemplate.postForObject(aiAgentUrl + "/plan", request, AiTripPlanResponse.class);
         } catch (RestClientException ex) {
             throw new BadRequestException(
@@ -51,12 +68,49 @@ public class AiPlannerServiceImpl implements AiPlannerService {
     }
 
     @Override
+    public Flux<ServerSentEvent<String>> streamPlan(Long userId, Long tripId, AiTripPlanRequest request) {
+        Trip trip = findTripOrThrow(tripId);
+        assertEditable(tripId, userId);
+
+        // Inject dates directly from the database record
+        request.setStartDate(trip.getStartDate().toString());
+        request.setEndDate(trip.getEndDate().toString());
+
+        return aiWebClient.post()
+                .uri(aiAgentUrl + "/plan/stream")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_EVENT_STREAM)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {})
+                .timeout(STREAM_TIMEOUT)
+                .doOnError(ex -> log.warn("AI plan stream failed for trip {}: {}", tripId, ex.toString()))
+                .onErrorResume(ex -> Flux.just(errorEvent(describeStreamFailure(ex))));
+    }
+
+    private String describeStreamFailure(Throwable ex) {
+        if (ex instanceof java.util.concurrent.TimeoutException) {
+            return "The AI planner is taking longer than expected. Please try again.";
+        }
+        return "Could not reach the AI planning service. Is it running at " + aiAgentUrl + "?";
+    }
+
+    private ServerSentEvent<String> errorEvent(String message) {
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(Map.of("message", message));
+        } catch (Exception serializationFailure) {
+            json = "{\"message\":\"Something went wrong generating your plan.\"}";
+        }
+        return ServerSentEvent.<String>builder().event("error").data(json).build();
+    }
+
+    @Override
     @Transactional
     public TripResponse applyPlan(Long userId, Long tripId, AiTripPlanResponse plan) {
         Trip trip = findTripOrThrow(tripId);
         assertEditable(tripId, userId);
 
-        // Replace any existing destinations for a clean slate.
         List<Destination> existingDestinations = destinationRepository.findByTripIdOrderByDisplayOrderAsc(tripId);
         destinationRepository.deleteAll(existingDestinations);
 
@@ -65,33 +119,28 @@ public class AiPlannerServiceImpl implements AiPlannerService {
             for (AiTripPlanResponse.ProposedDestination proposedDestination : plan.getDestinations()) {
                 Destination destination = Destination.builder()
                         .trip(trip)
-                        .name(proposedDestination.getName() != null ? proposedDestination.getName() : "Unknown Destination")
+                        .name(proposedDestination.getName())
                         .country(proposedDestination.getCountry())
                         .city(proposedDestination.getCity())
                         .latitude(proposedDestination.getLatitude())
                         .longitude(proposedDestination.getLongitude())
-                        .arrivalDate(proposedDestination.getArrivalDate() != null ? proposedDestination.getArrivalDate() : trip.getStartDate())
-                        .departureDate(proposedDestination.getDepartureDate() != null ? proposedDestination.getDepartureDate() : trip.getEndDate())
+                        .arrivalDate(proposedDestination.getArrivalDate())
+                        .departureDate(proposedDestination.getDepartureDate())
                         .displayOrder(destOrder++)
                         .build();
                 destinationRepository.save(destination);
             }
         }
 
-        // Replace any existing itinerary days for a clean slate.
         List<ItineraryDay> existingDays = dayRepository.findByTripIdOrderByDayNumberAsc(tripId);
         dayRepository.deleteAll(existingDays);
 
         if (plan.getDays() != null) {
-            int dayIndex = 0;
             for (AiTripPlanResponse.ProposedDay proposedDay : plan.getDays()) {
-                Integer dayNum = proposedDay.getDayNumber() != null ? proposedDay.getDayNumber() : (dayIndex + 1);
-                LocalDate dayDate = proposedDay.getDate() != null ? proposedDay.getDate() : trip.getStartDate().plusDays(dayNum - 1);
-                
                 ItineraryDay day = ItineraryDay.builder()
                         .trip(trip)
-                        .dayNumber(dayNum)
-                        .date(dayDate)
+                        .dayNumber(proposedDay.getDayNumber())
+                        .date(proposedDay.getDate())
                         .title(proposedDay.getTitle())
                         .build();
                 ItineraryDay savedDay = dayRepository.save(day);
@@ -102,7 +151,7 @@ public class AiPlannerServiceImpl implements AiPlannerService {
                         ItineraryItem item = ItineraryItem.builder()
                                 .itineraryDay(savedDay)
                                 .itemType(parseItemType(proposedItem.getItemType()))
-                                .title(proposedItem.getTitle() != null ? proposedItem.getTitle() : "Planned Activity")
+                                .title(proposedItem.getTitle())
                                 .description(proposedItem.getDescription())
                                 .locationName(proposedItem.getLocationName())
                                 .latitude(proposedItem.getLatitude())
@@ -111,12 +160,12 @@ public class AiPlannerServiceImpl implements AiPlannerService {
                                 .endTime(proposedItem.getEndTime())
                                 .displayOrder(order++)
                                 .cost(proposedItem.getEstimatedCost())
-                                .currency(proposedItem.getCurrency() != null ? proposedItem.getCurrency() : trip.getPrimaryCurrency())
+                                .currency(proposedItem.getCurrency() != null
+                                        ? proposedItem.getCurrency() : trip.getPrimaryCurrency())
                                 .build();
                         itemRepository.save(item);
                     }
                 }
-                dayIndex++;
             }
         }
 
@@ -124,14 +173,12 @@ public class AiPlannerServiceImpl implements AiPlannerService {
             AiTripPlanResponse.BudgetSuggestion suggestion = plan.getBudgetSuggestion();
             Budget budget = budgetRepository.findByTripId(tripId).orElseGet(() ->
                     Budget.builder().trip(trip).build());
-
             budget.setTotalBudget(nonNullOr(suggestion.getTotalBudget(), budget.getTotalBudget()));
             budget.setAccommodationLimit(nonNullOr(suggestion.getAccommodationLimit(), budget.getAccommodationLimit()));
             budget.setTransportLimit(nonNullOr(suggestion.getTransportLimit(), budget.getTransportLimit()));
             budget.setFoodLimit(nonNullOr(suggestion.getFoodLimit(), budget.getFoodLimit()));
             budget.setActivitiesLimit(nonNullOr(suggestion.getActivitiesLimit(), budget.getActivitiesLimit()));
             budget.setMiscLimit(nonNullOr(suggestion.getMiscLimit(), budget.getMiscLimit()));
-
             budgetRepository.save(budget);
         }
 

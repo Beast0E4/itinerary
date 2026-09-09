@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { Sparkles, Navigation, Loader2, MapPin, Calendar } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Sparkles, Navigation, Loader2, MapPin, Calendar, X } from 'lucide-react';
 import Modal from '../common/Modal';
 import Input from '../common/Input';
 import TagInput from '../common/TagInput';
 import Dropdown from '../common/Dropdown';
 import Button from '../common/Button';
+import AiPlanProgress from './AiPlanProgress';
 import { useGeolocation } from '../../hooks/useGeolocation';
+import { streamSse } from '../../features/ai/aiStream';
 import { formatCurrency } from '../../utils/currencyHelpers';
 import { formatDateShort } from '../../utils/dateHelpers';
 
@@ -17,14 +19,30 @@ const CURRENCIES = [
   { value: 'JPY', label: 'JPY' },
 ];
 
+/**
+ * Three views in one modal:
+ *   'form'     -> collect starting location, destinations, budget, preferences
+ *   'progress' -> live SSE log while the agent thinks (AiPlanProgress)
+ *   'preview'  -> the finished plan, with Apply / Discard
+ *
+ * Streaming state (progressLog, plan, planStatus) lives in Redux
+ * (aiSlice) so it survives if the modal is briefly unmounted, but the
+ * actual fetch + AbortController lives here since that's inherently a
+ * component-lifecycle concern.
+ */
 export default function AiPlanModal({
   open,
   onClose,
+  tripId,
   plan,
   planStatus,
   applyStatus,
+  progressLog,
   error,
-  onRequestPlan,
+  onStreamStart,
+  onProgress,
+  onStreamComplete,
+  onStreamError,
   onApplyPlan,
   onDiscard,
 }) {
@@ -37,6 +55,7 @@ export default function AiPlanModal({
     currency: 'USD',
     preferences: '',
   });
+  const abortControllerRef = useRef(null);
 
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
@@ -51,12 +70,10 @@ export default function AiPlanModal({
     setForm({ ...form, startLocationText: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Exactly one of (lat/lng) or (text) is sent — never both, and never
-    // neither, so the AI service never has to guess which one to trust.
     const usingCoords = locationSource === 'coords' && coords;
-    onRequestPlan({
+    const payload = {
       startLatitude: usingCoords ? coords.latitude : null,
       startLongitude: usingCoords ? coords.longitude : null,
       startLocationText: usingCoords ? null : (form.startLocationText || null),
@@ -64,24 +81,52 @@ export default function AiPlanModal({
       budget: Number(form.budget),
       currency: form.currency,
       preferences: form.preferences || null,
-    });
+    };
+
+    onStreamStart();
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    await streamSse(
+      `/trips/${tripId}/ai/plan/stream`,
+      payload,
+      {
+        onProgress: (data) => onProgress(data.message),
+        onComplete: (data) => onStreamComplete(data),
+        onError: (message) => onStreamError(message),
+      },
+      controller.signal
+    );
+  };
+
+  const handleCancelStream = () => {
+    abortControllerRef.current?.abort();
+    onDiscard();
   };
 
   const handleClose = () => {
+    abortControllerRef.current?.abort();
     onDiscard();
     onClose();
   };
 
-  const showPreview = plan && planStatus === 'succeeded';
+  // Derive which of the three views to render from planStatus alone --
+  // no separate local "view" state to keep in sync.
+  const view =
+    planStatus === 'loading' ? 'progress'
+    : planStatus === 'succeeded' && plan ? 'preview'
+    : 'form';
+
+  const title = {
+    form: 'Plan this trip with AI',
+    progress: 'Planning your trip',
+    preview: 'Proposed plan',
+  }[view];
 
   return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      title={showPreview ? 'Proposed plan' : 'Plan this trip with AI'}
-      size={showPreview ? 'xl' : 'md'}
-    >
-      {!showPreview ? (
+    <Modal open={open} onClose={handleClose} title={title} size={view === 'preview' ? 'xl' : 'md'}>
+      {view === 'form' && (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-text mb-1.5">Starting location</label>
@@ -148,7 +193,7 @@ export default function AiPlanModal({
             />
           </div>
 
-          <Button type="submit" loading={planStatus === 'loading'} disabled={!locationSource} className="w-full">
+          <Button type="submit" disabled={!locationSource} className="w-full">
             <Sparkles className="w-4 h-4" strokeWidth={1.75} />
             Generate plan
           </Button>
@@ -159,18 +204,42 @@ export default function AiPlanModal({
             </p>
           )}
 
-          {planStatus === 'failed' && (
-            <p className="text-sm text-danger bg-danger-subtle rounded-md px-4 py-3">
-              {error || 'Could not generate a plan. Please try again.'}
-            </p>
+          {planStatus === 'failed' && error && (
+            <p className="text-sm text-danger bg-danger-subtle rounded-md px-4 py-3">{error}</p>
           )}
         </form>
-      ) : (
+      )}
+
+      {view === 'progress' && (
+        <div className="space-y-5">
+          <AiPlanProgress messages={progressLog} streaming />
+          <Button variant="secondary" className="w-full" onClick={handleCancelStream}>
+            <X className="w-4 h-4" strokeWidth={1.75} />
+            Cancel
+          </Button>
+        </div>
+      )}
+
+      {view === 'preview' && (
         <div className="space-y-5">
           {plan.summary && (
             <p className="text-sm text-text-muted bg-accent-subtle text-accent rounded-md px-4 py-3">
               {plan.summary}
             </p>
+          )}
+
+          {plan.destinations?.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {plan.destinations.map((d, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1.5 bg-accent-subtle text-accent text-xs font-medium px-2.5 py-1 rounded-full"
+                >
+                  <MapPin className="w-3 h-3" strokeWidth={2} />
+                  {d.name}
+                </span>
+              ))}
+            </div>
           )}
 
           <div className="space-y-4 max-h-96 overflow-y-auto pr-1">

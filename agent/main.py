@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import uvicorn
-from src.routes.plan import router as trip_router
+from src.controller.plan import router as trip_router
 
 app = FastAPI (title="AI Trip Planner API")
 

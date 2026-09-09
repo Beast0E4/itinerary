@@ -1,5 +1,4 @@
 import requests
-
 from src.config.api_config import WEATHER_API
 from langchain_core.tools import tool
 
@@ -10,9 +9,8 @@ def get_weather(latitude: float, longitude: float, start_date: str, end_date: st
     
     REQUIREMENTS:
     The `start_date` and `end_date` must be in YYYY-MM-DD format.
-    The target locations's `latitude` and `longitude`
+    The target location's `latitude` and `longitude`.
     """
-    
     params = {
         "latitude": latitude,
         "longitude": longitude,
@@ -22,9 +20,10 @@ def get_weather(latitude: float, longitude: float, start_date: str, end_date: st
         "timezone": "auto"
     }
     
-    response = requests.get(WEATHER_API, params=params)
-    
-    if response.status_code == 200:
-        return response.json().get("daily", {})
-        
-    return {"error": f"Failed with status code {response.status_code}", "details": response.text}
+    try:
+        response = requests.get(WEATHER_API, params=params, timeout=10)
+        if response.status_code == 200:
+            return str(response.json().get("daily", {}))
+        return f"Weather forecast unavailable for {start_date} to {end_date} (status {response.status_code}). Proceed with seasonal climate estimates."
+    except Exception as e:
+        return f"Weather lookup failed: {str(e)}. Proceed with seasonal climate estimates."

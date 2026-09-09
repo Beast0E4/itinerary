@@ -1,40 +1,38 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from decimal import Decimal
-from datetime import date, time
 
 # --- REQUEST MODEL ---
-
 class AiTripPlanRequest(BaseModel):
     startLatitude: Optional[float] = None
     startLongitude: Optional[float] = None
     startLocationText: Optional[str] = None
     destinations: List[str] = Field(default_factory=list)
+    startDate: Optional[str] = None
+    endDate: Optional[str] = None
     budget: Decimal  # Maps to Java BigDecimal (@NotNull)
     currency: str = "USD"
     preferences: Optional[str] = None
 
-
 # --- RESPONSE MODELS ---
-
 class ProposedDestination(BaseModel):
     name: Optional[str] = None
     country: Optional[str] = None
     city: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    arrivalDate: Optional[date] = None  # Maps to Java LocalDate (YYYY-MM-DD)
-    departureDate: Optional[date] = None
+    arrivalDate: Optional[str] = None
+    departureDate: Optional[str] = None
 
 class ProposedItem(BaseModel):
-    itemType: Optional[str] = None  # FLIGHT, ACTIVITY, MEAL, etc.
+    itemType: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
     locationName: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    startTime: Optional[time] = None  # Maps to Java LocalTime (HH:MM:SS)
-    endTime: Optional[time] = None
+    startTime: Optional[str] = None
+    endTime: Optional[str] = None
     estimatedCost: Optional[Decimal] = None
     currency: Optional[str] = None
 

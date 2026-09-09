@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Sparkles, Route } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
@@ -15,12 +16,17 @@ import {
   selectItineraryStatus,
 } from '../features/itinerary/itinerarySlice';
 import {
-  requestAiPlan,
   applyAiPlan,
   clearAiPlan,
+  streamStarted,
+  progressReceived,
+  streamSucceeded,
+  streamFailed,
   selectAiPlan,
   selectAiPlanStatus,
   selectAiApplyStatus,
+  selectAiProgressLog,
+  selectAiError,
 } from '../features/ai/aiSlice';
 import DragDropItineraryBoard from '../components/itinerary/DragDropItineraryBoard';
 import ItemFormModal from '../components/itinerary/ItemFormModal';
@@ -32,18 +38,31 @@ import Button from '../components/common/Button';
 export default function ItineraryBuilderPage() {
   const dispatch = useAppDispatch();
   const tripId = useTripId();
+  const location = useLocation();
+  const navigate = useNavigate();
   const days = useAppSelector(selectItineraryDays);
   const status = useAppSelector(selectItineraryStatus);
   const aiPlan = useAppSelector(selectAiPlan);
   const aiPlanStatus = useAppSelector(selectAiPlanStatus);
   const aiApplyStatus = useAppSelector(selectAiApplyStatus);
+  const aiProgressLog = useAppSelector(selectAiProgressLog);
+  const aiError = useAppSelector(selectAiError);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [activeDay, setActiveDay] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(Boolean(location.state?.openAiPlan));
+
+  // Arriving here right after trip creation opens the AI modal automatically.
+  // Clear the navigation flag so refreshing or coming back later doesn't
+  // reopen it unexpectedly.
+  useEffect(() => {
+    if (location.state?.openAiPlan) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (tripId) dispatch(fetchItinerary(tripId));
@@ -100,10 +119,6 @@ export default function ItineraryBuilderPage() {
     if (result.meta.requestStatus !== 'fulfilled') {
       toast.error(result.payload || 'Could not set up the itinerary');
     }
-  };
-
-  const handleRequestAiPlan = (payload) => {
-    dispatch(requestAiPlan({ tripId, payload }));
   };
 
   const handleApplyAiPlan = async () => {
@@ -174,10 +189,16 @@ export default function ItineraryBuilderPage() {
       <AiPlanModal
         open={aiModalOpen}
         onClose={() => setAiModalOpen(false)}
+        tripId={tripId}
         plan={aiPlan}
         planStatus={aiPlanStatus}
         applyStatus={aiApplyStatus}
-        onRequestPlan={handleRequestAiPlan}
+        progressLog={aiProgressLog}
+        error={aiError}
+        onStreamStart={() => dispatch(streamStarted())}
+        onProgress={(message) => dispatch(progressReceived(message))}
+        onStreamComplete={(plan) => dispatch(streamSucceeded(plan))}
+        onStreamError={(message) => dispatch(streamFailed(message))}
         onApplyPlan={handleApplyAiPlan}
         onDiscard={() => dispatch(clearAiPlan())}
       />
